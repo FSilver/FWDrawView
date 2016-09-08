@@ -55,3 +55,5 @@
     {
         NSLog(@"单击");
     }
+### 请看实际解析效果图
+![FWDrawView](https://github.com/FSilver/FWDrawView/blob/master/draw.png)
