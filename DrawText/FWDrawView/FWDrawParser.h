@@ -13,7 +13,8 @@
 @interface FWDrawParser : NSObject
 
 @property(nonatomic,strong)FWDrawInfo *data;
-
+@property(nonatomic,strong)NSMutableAttributedString *resultAttributeString;
+@property(nonatomic,strong)NSDictionary *textAttributeDict;
 -(id)initWithConfig:(FWDrawConfig*)config;
 -(void)parseEmoji;
 -(void)parseUrl;

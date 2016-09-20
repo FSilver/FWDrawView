@@ -20,6 +20,8 @@
         _font = [UIFont systemFontOfSize:16];
         _textColor = RGB(26, 26, 26);
         _linkColor = RGB(81, 127, 174); //@{NSForegroundColorAttributeName:RGB(81, 127, 174)};
+        _underLineOfLink = 0;
+        _numberOfLines = 0;
    
     }
     return self;

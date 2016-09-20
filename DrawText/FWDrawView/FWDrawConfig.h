@@ -16,6 +16,7 @@
 @property(nonatomic,assign)UIFont  *font;
 @property(nonatomic,strong)UIColor *textColor;
 @property(nonatomic,strong)UIColor *linkColor;
+@property(nonatomic,assign)int underLineOfLink;
 @property(nonatomic,assign)NSInteger numberOfLines; 
 @property(nonatomic,assign)UIEdgeInsets edgInsets;
 

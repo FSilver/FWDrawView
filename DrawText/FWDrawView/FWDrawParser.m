@@ -12,8 +12,7 @@
 @interface FWDrawParser()
 
 @property(nonatomic,strong)FWDrawConfig *config;
-@property(nonatomic,strong)NSDictionary *textAttributeDict;
-@property(nonatomic,strong)NSMutableAttributedString *resultAttributeString;
+
 
 @property(nonatomic,strong)NSMutableArray *emojiArray;
 @property(nonatomic,strong)NSMutableArray *linkArray;
@@ -77,45 +76,45 @@
     NSRegularExpression * regular=[[NSRegularExpression alloc]initWithPattern:emojiRegex options:NSRegularExpressionDotMatchesLineSeparators|NSRegularExpressionCaseInsensitive error:nil];
     //得到符合[微笑]格式的文字位置
     NSArray *matchArray =[regular matchesInString:_config.text options:0 range:NSMakeRange(0, [_config.text length])];
-
+    
     NSUInteger location = 0;
     for (NSTextCheckingResult *match in matchArray) {
-       
-         NSRange range = match.range;
-         //非表情文字
-         NSAttributedString *subAttStr = [_resultAttributeString attributedSubstringFromRange:NSMakeRange(location, range.location-location)];
-         [emojiAttributeString appendAttributedString:subAttStr];
-         location = NSMaxRange(range);
         
-         
-         NSString* substringForMatch = [_config.text substringWithRange:match.range];
-         NSString *imageName = [emojiDict objectForKey:substringForMatch];
-         imageName = [NSString stringWithFormat:@"%@/%@",bundleName,imageName];
-         UIImage *image = [UIImage imageNamed:imageName];
-         if(image && image.size.width>0 && image.size.height>0){
-             
-             //表情图片存在
-             float heihgt = _config.font.lineHeight;
-             float width = image.size.width*heihgt/image.size.height;
-             NSDictionary *placeHodelDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithFloat:width],@"width",[NSNumber numberWithFloat:heihgt],@"height", nil];
-             
-             NSAttributedString *placeAttStr = [self getPlaceHolderAttributeStringByDelegateDict:placeHodelDict];
+        NSRange range = match.range;
+        //非表情文字
+        NSAttributedString *subAttStr = [_resultAttributeString attributedSubstringFromRange:NSMakeRange(location, range.location-location)];
+        [emojiAttributeString appendAttributedString:subAttStr];
+        location = NSMaxRange(range);
+        
+        
+        NSString* substringForMatch = [_config.text substringWithRange:match.range];
+        NSString *imageName = [emojiDict objectForKey:substringForMatch];
+        imageName = [NSString stringWithFormat:@"%@/%@",bundleName,imageName];
+        UIImage *image = [UIImage imageNamed:imageName];
+        if(image && image.size.width>0 && image.size.height>0){
+            
+            //表情图片存在
+            float heihgt = _config.font.lineHeight;
+            float width = image.size.width*heihgt/image.size.height;
+            NSDictionary *placeHodelDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithFloat:width],@"width",[NSNumber numberWithFloat:heihgt],@"height", nil];
+            
+            NSAttributedString *placeAttStr = [self getPlaceHolderAttributeStringByDelegateDict:placeHodelDict];
             [emojiAttributeString appendAttributedString:placeAttStr];
-             
-             //收集表情
-             FWDrawEmojiInfo *emoji = [[FWDrawEmojiInfo alloc]init];
-             emoji.imageName = imageName;
-             emoji.range = NSMakeRange(emojiAttributeString.length, 1);
-             emoji.descender = _config.font.descender;
-             [_emojiArray addObject:emoji];
-             
-         }else{
-    
-             //表情图片不存在，直接加上文字，不做处理
-             NSAttributedString *temp = [_resultAttributeString attributedSubstringFromRange:NSMakeRange(range.location, range.length)];
-             [emojiAttributeString appendAttributedString:temp];
-         }
-     }
+            
+            //收集表情
+            FWDrawEmojiInfo *emoji = [[FWDrawEmojiInfo alloc]init];
+            emoji.imageName = imageName;
+            emoji.range = NSMakeRange(emojiAttributeString.length, 1);
+            emoji.descender = _config.font.descender;
+            [_emojiArray addObject:emoji];
+            
+        }else{
+            
+            //表情图片不存在，直接加上文字，不做处理
+            NSAttributedString *temp = [_resultAttributeString attributedSubstringFromRange:NSMakeRange(range.location, range.length)];
+            [emojiAttributeString appendAttributedString:temp];
+        }
+    }
     
     if(location<_config.text.length){
         
@@ -145,7 +144,7 @@
             static int urlInt = 1;
             urlInt = (urlInt==1)?0:1;
             NSString *identifier = [NSString stringWithFormat:@"parseUrl_%d",urlInt]; //CTRun差异化处理，防止紧挨的2个Run被合并成一个
-            NSDictionary *linkDict = @{NSForegroundColorAttributeName:_config.linkColor,NSAttributeLinkKey:identifier};
+            NSDictionary *linkDict = @{NSForegroundColorAttributeName:_config.linkColor,NSAttributeLinkKey:identifier,NSUnderlineStyleAttributeName:[NSNumber numberWithInt:_config.underLineOfLink]};
             
             NSString *text = [string substringWithRange:range];
             [_resultAttributeString addAttributes:linkDict range:range];
@@ -172,11 +171,11 @@
         
         NSRange range = match.range;
         if(![self isRangeOverlap:range type:FWLinkPhoneNumber]){
-    
+            
             static int phoneInt = 1;
             phoneInt = (phoneInt==1)?0:1;
             NSString *identifier = [NSString stringWithFormat:@"parsePhone_%d",phoneInt]; //CTRun差异化处理，防止紧挨的2个Run被合并成一个
-            NSDictionary *linkDict = @{NSForegroundColorAttributeName:_config.linkColor,NSAttributeLinkKey:identifier};
+            NSDictionary *linkDict = @{NSForegroundColorAttributeName:_config.linkColor,NSAttributeLinkKey:identifier,NSUnderlineStyleAttributeName:[NSNumber numberWithInt:_config.underLineOfLink]};
             
             NSString *text = [string substringWithRange:range];
             [_resultAttributeString addAttributes:linkDict range:range];
@@ -197,14 +196,14 @@
     if(range.location+range.length>string.length){
         return;
     }
-   
+    
     
     if(![self isRangeOverlap:range type:FWLinkCustom]){
         
         static int linkInt = 1;
         linkInt = (linkInt==1)?0:1;
         NSString *identifier = [NSString stringWithFormat:@"addLink_%d",linkInt]; //CTRun差异化处理，防止紧挨的2个Run被合并成一个
-        NSDictionary *linkDict = @{NSForegroundColorAttributeName:_config.linkColor,NSAttributeLinkKey:identifier};
+        NSDictionary *linkDict = @{NSForegroundColorAttributeName:_config.linkColor,NSAttributeLinkKey:identifier,NSUnderlineStyleAttributeName:[NSNumber numberWithInt:_config.underLineOfLink]};
         
         [_resultAttributeString addAttributes:linkDict range:range];
         
@@ -214,7 +213,7 @@
         link.text = text;
         link.range = range;
         link.type = FWLinkCustom;
-        link.value = text;
+        link.value = value;
         [_linkArray addObject:link];
     }
 }
@@ -260,10 +259,10 @@
     data.edgInsets = _config.edgInsets;
     
     if(path){
-       CFRelease(path); 
+        CFRelease(path); 
     }
     if(framesetter){
-       CFRelease(framesetter); 
+        CFRelease(framesetter); 
     }
     if(ctFrame){
         CFRelease(ctFrame);
@@ -385,7 +384,7 @@
 #pragma mark - 表情占位符
 
 static CGFloat ascentCallback(void *ref){
- 
+    
     NSNumber *number = (NSNumber*)[(__bridge NSDictionary*)ref objectForKey:@"height"];
     float height = number.floatValue;
     return height;
